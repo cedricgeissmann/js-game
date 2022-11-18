@@ -1,0 +1,61 @@
+*, *::before, *::after {
+    box-sizing: content-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: black;
+}
+
+
+#main {
+    height: min(100vw, 100vh);
+    width: min(100vw, 100vh);
+    margin: 0;
+    padding: 0;
+    top: 50%;
+    translate: 0 -50%;
+    position: absolute;
+    text-align: center;
+}
+
+#game {
+    display: none;
+    background-color: forestgreen;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+
+#game svg {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+#menu {
+    background: forestgreen;
+    height: 100%;
+}
+
+#menu h1 {
+    margin: 0;
+    padding: 0;
+    padding-top: 50px;
+}
+
+#menu ul {
+    margin: 0;
+    padding: 0;
+}
+
+#menu ul li {
+    list-style: none;
+}
+
+#menu ul li button {
+    width: 80%;
+}
