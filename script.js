@@ -8,7 +8,8 @@ const HEIGHT = 800
 
 const NS = "http://www.w3.org/2000/svg"
 const PROJECTILES = []
-const ITEMS = []
+const ITEMS = {}
+let ITEMS_LAST_ID = 0
 const CAMERA_CENTER = new Vector(0, 0)
 const INPUT = new Input()
 let PAUSE = true
@@ -93,7 +94,10 @@ class Item extends GameObject {
         this.obj.setAttribute("fill", "blue")
         this.obj.setAttribute("class", "item")
         screen.appendChild(this.obj)
-        ITEMS.push(this)
+
+        this.id = ITEMS_LAST_ID++
+
+        ITEMS[this.id] = this
     }
 }
 
@@ -117,6 +121,25 @@ class Player extends GameObject {
 
     updatePosition() {
         this.dir = INPUT.getDirection().normalize().scale(this.speed)
+        let dirBefore = this.dir.copy()
+
+
+        $$(".can-collide").forEach((obstacle) => {
+            let rect1 = this.obj.getBBox()
+            let rect2 = obstacle.getBBox()
+
+            let diag1 = new Vector(rect1.width, rect1.height)
+            let diag2 = new Vector(rect2.width, rect2.height)
+            let p1 = new Vector(rect1.x, rect1.y).add(diag1.scale(0.5))
+            let p2 = new Vector(rect2.x, rect2.y).add(diag2.scale(0.5))
+
+            let dist = p1.diff(p2)
+
+            if (dist.length() < diag1.length()) {
+                this.dir = this.dir.add(dist.neg().scale(0.5))
+            }
+        })
+
         this.pos = this.pos.add(this.dir)
         updateCirclePosition(this.obj, this.pos)
         this.orient = this.pos.diff(pointer.pos).normalize().scale(20)
@@ -126,12 +149,14 @@ class Player extends GameObject {
     }
 
     checkCollision() {
-        ITEMS.forEach((item) => {
+        Object.values(ITEMS).forEach((item) => {
             if (checkIntersection(this.obj.getBBox(), item.obj.getBBox())) {
                 this.pickUp(item)
                 screen.removeChild(item.obj)
+                delete ITEMS[item.id]
             }
         })
+
     }
 
     pickUp(item) {
