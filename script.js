@@ -31,6 +31,7 @@ class Projectile extends GameObject {
 
         this.radiusGrowth = 0
         this.radius = 2
+        this.trigger = null
 
         this.projectile = document.createElementNS(NS, "circle")
         this.projectile.setAttribute("cx", pos.x)
@@ -43,13 +44,19 @@ class Projectile extends GameObject {
 
     updatePosition() {
         super.updatePosition()
-
         if (this.radiusGrowth !== 0) {
             this.radius = this.radius + this.radiusGrowth
             this.projectile.setAttribute("r", this.radius)
         }
 
         updateCirclePosition(this.projectile, this.pos)
+    }
+
+    fire(duration) {
+        this.trigger = setTimeout(function(proj) {
+            proj.speed = 0
+            proj.explode()
+        }, duration, this)
     }
 
     explode() {
@@ -61,7 +68,19 @@ class Projectile extends GameObject {
 
     destroy() {
         screen.removeChild(this.projectile)
-        delete this
+        //delete(this)
+    }
+
+    checkCollision() {
+        $$(".can-collide").forEach((elem) => {
+            checkIntersection(this.projectile.getBBox(), elem.getBBox())
+            if (checkIntersection(this.projectile.getBBox(), elem.getBBox())) {
+                clearTimeout(this.trigger)
+                if (this.radiusGrowth === 0) {
+                    this.explode()
+                }
+            }
+        })
     }
 }
 
@@ -113,21 +132,27 @@ class Spell {
     constructor () {
         this.name = "Fireball"
         this.value = 1
-        this.duration = 2000
+        this.duration = 5000
         this.cooldown = 5
     }
 
     cast() {
         this.projectile = new Projectile(player.pos.copy(), player.orient, 2)
-        setTimeout(function(proj) {
-            proj.speed = 0
-            proj.explode()
-        }, this.duration, this.projectile)
+        this.projectile.fire(this.duration)
     }
 
     finish() {
 
     }
+}
+
+function checkIntersection(rect1, rect2) {
+    if (rect2.x - rect1.x < rect1.width && rect2.x + rect2.width - rect1.x > 0) {
+        if (rect2.y - rect1.y < rect1.height && rect2.y + rect2.height - rect1.y > 0) {
+            return true
+        }
+    }
+    return false
 }
 
 function updateCirclePosition(circ, pos) {
@@ -137,6 +162,10 @@ function updateCirclePosition(circ, pos) {
 
 function $(selector) {
     return document.querySelector(selector)
+}
+
+function $$(selector) {
+    return document.querySelectorAll(selector)
 }
 
 function newGame() {
@@ -155,13 +184,14 @@ const pointer = new Pointer()
 function gameLoop() {
     projectiles.forEach(function(proj) {
         proj.updatePosition()
+        proj.checkCollision()
     })
     player.updatePosition()
 
     // center camera on player
     CAMERA_CENTER.x = player.pos.x - WIDTH / 2
     CAMERA_CENTER.y = player.pos.y - HEIGHT / 2
-    screen.setAttribute("viewBox", `${CAMERA_CENTER.x} ${CAMERA_CENTER.y} ${WIDTH} ${HEIGHT}`)
+    //screen.setAttribute("viewBox", `${CAMERA_CENTER.x} ${CAMERA_CENTER.y} ${WIDTH} ${HEIGHT}`)
 
     window.requestAnimationFrame(gameLoop)
 }
