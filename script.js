@@ -31,6 +31,18 @@ class Vector {
         this.y = this.y * val
         return this
     }
+
+    diff(other) {
+        let x = other.x - this.x
+        let y = other.y - this.x
+        return new Vector(x, y)
+    }
+
+    add(other) {
+        let x = other.x + this.x
+        let y = other.y + this.x
+        return new Vector(x, y)
+    }
 }
 
 class GameObject {
@@ -73,13 +85,19 @@ class Player extends GameObject {
         this.obj.setAttribute("cy", pos.y)
         this.obj.setAttribute("r", 10)
         this.obj.setAttribute("fill", "black")
-        document.querySelector("#game > svg").appendChild(this.obj)
+        screen.appendChild(this.obj)
+
+        this.orientetion = document.createElementNS(NS, "circle")
+        this.orientetion.setAttribute("r", 5)
+        this.orientetion.setAttribute("fill", "black")
+        screen.appendChild(this.orientetion)
     }
 
     updatePosition() {
         super.updatePosition()
-        this.obj.setAttribute("cx", this.pos.x)
-        this.obj.setAttribute("cy", this.pos.y)
+        updateCirclePosition(this.obj, this.pos)
+        let orient = this.pos.diff(pointer.pos).normalize().scale(20)
+        updateCirclePosition(this.orientetion, this.pos.add(orient))
     }
 }
 
@@ -97,8 +115,7 @@ class Pointer {
     updatePosition(ev) {
         this.pos.x = ev.offsetX / screen.clientWidth * WIDTH + (player.pos.x - WIDTH / 2)
         this.pos.y = ev.offsetY / screen.clientHeight * HEIGHT + (player.pos.y - HEIGHT / 2)
-        this.obj.setAttribute("cx", this.pos.x)
-        this.obj.setAttribute("cy", this.pos.y)
+        updateCirclePosition(this.obj, this.pos)
     }
 }
 
@@ -118,6 +135,11 @@ class Spell {
     finish() {
 
     }
+}
+
+function updateCirclePosition(circ, pos) {
+    circ.setAttribute("cx", pos.x)
+    circ.setAttribute("cy", pos.y)
 }
 
 function $(selector) {
