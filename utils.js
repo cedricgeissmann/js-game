@@ -5,7 +5,7 @@ export class Vector {
     }
 
     length() {
-        return Math.sqrt(this.x * this.x + this.y * this.y)
+        return Math.sqrt(this.x ** 2 + this.y ** 2)
     }
 
     normalize() {
@@ -25,7 +25,7 @@ export class Vector {
 
     diff(other) {
         let x = other.x - this.x
-        let y = other.y - this.x
+        let y = other.y - this.y
         return new Vector(x, y)
     }
 
@@ -41,5 +41,18 @@ export class Vector {
 
     neg() {
         return new Vector(-this.x, -this.y)
+    }
+}
+
+export class Input {
+    constructor() {
+        this.left = 0
+        this.right = 0
+        this.up = 0
+        this.down = 0
+    }
+
+    getDirection() {
+        return new Vector(this.right - this.left, this.down - this.up)
     }
 }

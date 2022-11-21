@@ -1,4 +1,4 @@
-import { Vector } from "./utils.js"
+import { Vector, Input } from "./utils.js"
 
 let speed = 0.2
 let player
@@ -9,6 +9,7 @@ const HEIGHT = 800
 const NS = "http://www.w3.org/2000/svg"
 const projectiles = []
 const CAMERA_CENTER = new Vector(0, 0)
+const INPUT = new Input()
 
 
 
@@ -102,6 +103,7 @@ class Player extends GameObject {
     }
 
     updatePosition() {
+        this.dir = INPUT.getDirection()
         super.updatePosition()
         updateCirclePosition(this.obj, this.pos)
         this.orient = this.pos.diff(pointer.pos).normalize().scale(20)
@@ -126,6 +128,7 @@ class Pointer {
         updateCirclePosition(this.obj, this.pos)
     }
 }
+
 
 
 class Spell {
@@ -191,38 +194,41 @@ function gameLoop() {
     // center camera on player
     CAMERA_CENTER.x = player.pos.x - WIDTH / 2
     CAMERA_CENTER.y = player.pos.y - HEIGHT / 2
-    //screen.setAttribute("viewBox", `${CAMERA_CENTER.x} ${CAMERA_CENTER.y} ${WIDTH} ${HEIGHT}`)
+    screen.setAttribute("viewBox", `${CAMERA_CENTER.x} ${CAMERA_CENTER.y} ${WIDTH} ${HEIGHT}`)
 
     window.requestAnimationFrame(gameLoop)
 }
 
 window.onkeydown = function(ev) {
     if (ev.key === "d") {
-        player.dir.x = 1
+        INPUT.right = 1
     } else if (ev.key === "a") {
-        player.dir.x = -1
+        INPUT.left = 1
     } else if (ev.key === "w") {
-        player.dir.y = -1
+        INPUT.up = 1
     } else if (ev.key === "s") {
-        player.dir.y = 1
+        INPUT.down = 1
     } else if (ev.code === "Space") {
-        //let proj = new Projectile(new Vector(player.pos.x, player.pos.y), player.orient, 2)
-        let spell = new Spell()
-        spell.cast()
-        let valBefore = speed
-        speed = speed + spell.value
-        setTimeout(function() {
-            speed = valBefore
-        }, spell.duration)
+        
     }
 }
 
 window.onkeyup = function(ev) {
-    if (ev.key === "a" || ev.key === "d") {
-        player.dir.x = 0
-    } else if (ev.key === "w" || ev.key === "s") {
-        player.dir.y = 0
+    if (ev.key === "d") {
+        INPUT.right = 0
+    } else if (ev.key === "a") {
+        INPUT.left = 0
+    } else if (ev.key === "w") {
+        INPUT.up = 0
+    } else if (ev.key === "s") {
+        INPUT.down = 0
     }
+}
+
+screen.onmousedown = function(ev) {
+    pointer.updatePosition(ev)
+    let spell = new Spell()
+    spell.cast()
 }
 
 screen.onmousemove = function(ev) {
