@@ -6,19 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RPG</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+    <script src="script.js" type="module" defer></script>
 </head>
 <body>
     <div id="main">
     <div id="game">
         <svg id="game-screen" viewBox="0 0 100 100" width="1024" height="800">
+            <rect x="80" y="50" width="20" height="20" fill="brown" />
         </svg>
     </div>
     <div id="menu">
         <h1>Awesome RPG</h1>
         <ul>
             <li>
-                <button onclick="newGame()">New Game</button>
+                <button id="new-game-btn">New Game</button>
             </li>
         </ul>
     </div>
