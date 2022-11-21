@@ -83,6 +83,25 @@ class Player extends GameObject {
     }
 }
 
+class Pointer {
+    constructor() {
+        this.pos = new Vector(0, 0)
+        this.obj = document.createElementNS(NS, "circle")
+        this.obj.setAttribute("cx", 0)
+        this.obj.setAttribute("cy", 0)
+        this.obj.setAttribute("r", 5)
+        this.obj.setAttribute("fill", "red")
+        document.querySelector("#game > svg").appendChild(this.obj)
+    }
+
+    updatePosition(ev) {
+        this.pos.x = ev.offsetX / screen.clientWidth * WIDTH + (player.pos.x - WIDTH / 2)
+        this.pos.y = ev.offsetY / screen.clientHeight * HEIGHT + (player.pos.y - HEIGHT / 2)
+        this.obj.setAttribute("cx", this.pos.x)
+        this.obj.setAttribute("cy", this.pos.y)
+    }
+}
+
 
 class Spell {
     constructor () {
@@ -117,6 +136,7 @@ function newGame() {
 }
 
 const screen = document.querySelector("#game-screen")
+const pointer = new Pointer()
 function gameLoop() {
     projectiles.forEach(function(proj) {
         proj.updatePosition()
@@ -156,4 +176,8 @@ window.onkeyup = function(ev) {
     } else if (ev.code === "ArrowUp" || ev.code === "ArrowDown") {
         player.dir.y = 0
     }
+}
+
+screen.onmousemove = function(ev) {
+    pointer.updatePosition(ev)
 }

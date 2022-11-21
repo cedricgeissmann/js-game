@@ -22,7 +22,6 @@ body {
 
 #game {
     display: none;
-    background-color: forestgreen;
     padding: 0;
     margin: 0;
     height: 100%;
@@ -30,10 +29,14 @@ body {
 }
 
 #game svg {
-    height: 100%;
+    background-color: forestgreen;
+    height: 78.125%;
     width: 100%;
     padding: 0;
     margin: 0;
+    margin-top: 10.9375%;
+    margin-bottom: 10.9375%;
+    cursor: none;
 }
 
 #menu {
