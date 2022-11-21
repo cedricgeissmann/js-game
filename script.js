@@ -10,6 +10,7 @@ const NS = "http://www.w3.org/2000/svg"
 const projectiles = []
 const CAMERA_CENTER = new Vector(0, 0)
 const INPUT = new Input()
+let PAUSE = true
 
 
 
@@ -114,7 +115,6 @@ class Player extends GameObject {
 
     checkCollision() {
         $$(".item").forEach((item) => {
-            console.log(this)
             if (checkIntersection(this.obj.getBBox(), item.getBBox())) {
                 this.pickUp(item)
                 screen.removeChild(item)
@@ -124,6 +124,11 @@ class Player extends GameObject {
 
     pickUp(item) {
         console.log("Implement pick up: ", item)
+    }
+
+    destroy() {
+        screen.removeChild(this.obj)
+        screen.removeChild(this.orientetion)
     }
 }
 
@@ -193,8 +198,30 @@ function newGame() {
     menu.style.display = "none"
     game.style.display = "block"
 
+    if (player != null) {
+        player.destroy()
+    }
+
     player = new Player(new Vector(0, 0), new Vector(0, 0), 1)
+    PAUSE = false
     window.requestAnimationFrame(gameLoop)
+}
+
+function resumeGame() {
+    const menu = document.querySelector("#menu")
+    const game = document.querySelector("#game")
+    menu.style.display = "none"
+    game.style.display = "block"
+    PAUSE = false
+    window.requestAnimationFrame(gameLoop)
+}
+
+function showMenu() {
+    const menu = document.querySelector("#menu")
+    const game = document.querySelector("#game")
+    menu.style.display = "block"
+    game.style.display = "none"
+    PAUSE = true
 }
 
 const screen = document.querySelector("#game-screen")
@@ -212,8 +239,9 @@ function gameLoop() {
     CAMERA_CENTER.x = player.pos.x - WIDTH / 2
     CAMERA_CENTER.y = player.pos.y - HEIGHT / 2
     screen.setAttribute("viewBox", `${CAMERA_CENTER.x} ${CAMERA_CENTER.y} ${WIDTH} ${HEIGHT}`)
-
-    window.requestAnimationFrame(gameLoop)
+    if (!PAUSE) {
+        window.requestAnimationFrame(gameLoop)
+    }
 }
 
 window.onkeydown = function(ev) {
@@ -227,6 +255,8 @@ window.onkeydown = function(ev) {
         INPUT.down = 1
     } else if (ev.code === "Space") {
         
+    } else if (ev.code === "Escape") {
+        showMenu()
     }
 }
 
@@ -253,3 +283,4 @@ screen.onmousemove = function(ev) {
 }
 
 $("#new-game-btn").addEventListener("click", newGame)
+$("#resume-game-btn").addEventListener("click", resumeGame)
