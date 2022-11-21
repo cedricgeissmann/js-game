@@ -31,11 +31,15 @@ export class Vector {
 
     add(other) {
         let x = other.x + this.x
-        let y = other.y + this.x
+        let y = other.y + this.y
         return new Vector(x, y)
     }
 
     copy() {
         return new Vector(this.x, this.y)
+    }
+
+    neg() {
+        return new Vector(-this.x, -this.y)
     }
 }

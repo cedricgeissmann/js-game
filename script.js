@@ -145,8 +145,7 @@ function newGame() {
     menu.style.display = "none"
     game.style.display = "block"
 
-    player = new Player(new Vector(50, 50), new Vector(0, 0), 1)
-
+    player = new Player(new Vector(0, 0), new Vector(0, 0), 1)
     window.requestAnimationFrame(gameLoop)
 }
 
