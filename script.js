@@ -108,6 +108,22 @@ class Player extends GameObject {
         updateCirclePosition(this.obj, this.pos)
         this.orient = this.pos.diff(pointer.pos).normalize().scale(20)
         updateCirclePosition(this.orientetion, this.pos.add(this.orient))
+
+        this.checkCollision()
+    }
+
+    checkCollision() {
+        $$(".item").forEach((item) => {
+            console.log(this)
+            if (checkIntersection(this.obj.getBBox(), item.getBBox())) {
+                this.pickUp(item)
+                screen.removeChild(item)
+            }
+        })
+    }
+
+    pickUp(item) {
+        console.log("Implement pick up: ", item)
     }
 }
 
@@ -190,6 +206,7 @@ function gameLoop() {
         proj.checkCollision()
     })
     player.updatePosition()
+
 
     // center camera on player
     CAMERA_CENTER.x = player.pos.x - WIDTH / 2
