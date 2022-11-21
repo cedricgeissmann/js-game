@@ -7,7 +7,8 @@ const WIDTH = 1024
 const HEIGHT = 800
 
 const NS = "http://www.w3.org/2000/svg"
-const projectiles = []
+const PROJECTILES = []
+const ITEMS = []
 const CAMERA_CENTER = new Vector(0, 0)
 const INPUT = new Input()
 let PAUSE = true
@@ -15,21 +16,16 @@ let PAUSE = true
 
 
 class GameObject {
-    constructor(pos, dir, speed) {
-        this.speed = speed
+    constructor(pos) {
         this.pos = pos
-        this.dir = dir.normalize()
-    }
-
-    updatePosition() {
-        this.pos.x = this.pos.x + this.dir.x * this.speed
-        this.pos.y = this.pos.y + this.dir.y * this.speed
     }
 }
 
 class Projectile extends GameObject {
     constructor(pos, dir, speed) {
-        super(pos, dir, speed)
+        super(pos)
+        this.dir = dir.normalize().scale(speed)
+        this.speed = speed
 
         this.radiusGrowth = 0
         this.radius = 2
@@ -40,12 +36,12 @@ class Projectile extends GameObject {
         this.projectile.setAttribute("cy", pos.y)
         this.projectile.setAttribute("r", this.radius)
         this.projectile.setAttribute("fill", "red")
-        projectiles.push(this)
+        PROJECTILES.push(this)
         screen.appendChild(this.projectile)
     }
 
     updatePosition() {
-        super.updatePosition()
+        this.pos = this.pos.add(this.dir)
         if (this.radiusGrowth !== 0) {
             this.radius = this.radius + this.radiusGrowth
             this.projectile.setAttribute("r", this.radius)
@@ -86,9 +82,25 @@ class Projectile extends GameObject {
     }
 }
 
+class Item extends GameObject {
+    constructor(pos) {
+        super(pos)
+        this.obj = document.createElementNS(NS, "rect")
+        this.obj.setAttribute("x", pos.x)
+        this.obj.setAttribute("y", pos.y)
+        this.obj.setAttribute("width", 20)
+        this.obj.setAttribute("height", 20)
+        this.obj.setAttribute("fill", "blue")
+        this.obj.setAttribute("class", "item")
+        screen.appendChild(this.obj)
+        ITEMS.push(this)
+    }
+}
+
 class Player extends GameObject {
-    constructor(pos, dir, speed) {
-        super(pos, dir, speed)
+    constructor(pos) {
+        super(pos)
+        this.speed = 2
         this.orient = new Vector(0, 0)
         this.obj = document.createElementNS(NS, "circle")
         this.obj.setAttribute("cx", pos.x)
@@ -104,8 +116,8 @@ class Player extends GameObject {
     }
 
     updatePosition() {
-        this.dir = INPUT.getDirection()
-        super.updatePosition()
+        this.dir = INPUT.getDirection().normalize().scale(this.speed)
+        this.pos = this.pos.add(this.dir)
         updateCirclePosition(this.obj, this.pos)
         this.orient = this.pos.diff(pointer.pos).normalize().scale(20)
         updateCirclePosition(this.orientetion, this.pos.add(this.orient))
@@ -114,10 +126,10 @@ class Player extends GameObject {
     }
 
     checkCollision() {
-        $$(".item").forEach((item) => {
-            if (checkIntersection(this.obj.getBBox(), item.getBBox())) {
+        ITEMS.forEach((item) => {
+            if (checkIntersection(this.obj.getBBox(), item.obj.getBBox())) {
                 this.pickUp(item)
-                screen.removeChild(item)
+                screen.removeChild(item.obj)
             }
         })
     }
@@ -202,7 +214,8 @@ function newGame() {
         player.destroy()
     }
 
-    player = new Player(new Vector(0, 0), new Vector(0, 0), 1)
+    player = new Player(new Vector(0, 0))
+    new Item(new Vector(100, 50))
     PAUSE = false
     window.requestAnimationFrame(gameLoop)
 }
@@ -228,7 +241,7 @@ const screen = document.querySelector("#game-screen")
 const pointer = new Pointer()
 
 function gameLoop() {
-    projectiles.forEach(function(proj) {
+    PROJECTILES.forEach(function(proj) {
         proj.updatePosition()
         proj.checkCollision()
     })
