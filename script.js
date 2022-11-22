@@ -130,13 +130,14 @@ class Player extends GameObject {
 
             let diag1 = new Vector(rect1.width, rect1.height)
             let diag2 = new Vector(rect2.width, rect2.height)
-            let p1 = new Vector(rect1.x, rect1.y).add(diag1.scale(0.5))
-            let p2 = new Vector(rect2.x, rect2.y).add(diag2.scale(0.5))
+            let p1 = new Vector(rect1.x, rect1.y).add(this.dir)
+            let p2 = new Vector(rect2.x, rect2.y)
 
             let dist = p1.diff(p2)
 
-            if (dist.length() < diag1.length()) {
-                this.dir = this.dir.add(dist.neg().scale(0.5))
+            if (dist.length() <= diag1.length()) {
+                //console.log(dist)
+                this.dir = this.dir.add(dist.neg().normalize().scale(2))
             }
         })
 
