@@ -3,8 +3,9 @@ import { Vector, Input } from "./utils.js"
 let speed = 0.2
 let player
 
-const WIDTH = 1024
-const HEIGHT = 800
+const TILE_SIZE = 16
+const WIDTH = 20 * TILE_SIZE
+const HEIGHT = 15 * TILE_SIZE
 
 const NS = "http://www.w3.org/2000/svg"
 const PROJECTILES = []
