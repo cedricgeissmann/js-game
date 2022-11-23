@@ -15,6 +15,27 @@ const CAMERA_CENTER = new Vector(0, 0)
 const INPUT = new Input()
 let PAUSE = true
 
+class SpriteSheet {
+    constructor({url}) {
+        this.url = url
+        this.img = document.createElementNS(NS, "image")
+        this.img.setAttribute("href", this.url)
+        this.img.setAttribute("clip-path", "inset(0px 16px 0px 16px")
+        screen.appendChild(this.img)
+        this.tot = 2
+        this.pos = 0
+    }
+
+    draw(pos) {
+        this.img.setAttribute("x", pos.x - TILE_SIZE / 2)
+        this.img.setAttribute("y", pos.y - TILE_SIZE / 2)
+        //this.img.setAttribute("clip-path", `inset(0px ${16 * (this.tot - this.pos)}px 0px ${16 * this.pos}px`)
+        this.pos = (this.pos + 1)
+        if (this.pos > this.tot) {
+            this.pos = 0
+        }
+    }
+}
 
 
 class GameObject {
@@ -107,11 +128,14 @@ class Player extends GameObject {
         super(pos)
         this.speed = 2
         this.orient = new Vector(0, 0)
+
+        this.sprite = new SpriteSheet({url: "res/player.png"})
+
         this.obj = document.createElementNS(NS, "circle")
         this.obj.setAttribute("cx", pos.x)
         this.obj.setAttribute("cy", pos.y)
         this.obj.setAttribute("r", 10)
-        this.obj.setAttribute("fill", "black")
+        this.obj.setAttribute("fill", "transparent")
         screen.appendChild(this.obj)
 
         this.orientetion = document.createElementNS(NS, "circle")
@@ -146,6 +170,8 @@ class Player extends GameObject {
         updateCirclePosition(this.obj, this.pos)
         this.orient = this.pos.diff(pointer.pos).normalize().scale(20)
         updateCirclePosition(this.orientetion, this.pos.add(this.orient))
+
+        this.sprite.draw(this.pos)
 
         this.checkCollision()
     }
