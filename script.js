@@ -290,13 +290,17 @@ function showMenu() {
 
 
 function gameLoop() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
     ctx.clearRect(0, 0, WIDTH, HEIGHT)
+    player.updatePosition()
+    
+    ctx.translate(-(player.pos.x - WIDTH / 2), -(player.pos.y - HEIGHT / 2))
+    
     pointer.draw(ctx)
-
     PROJECTILES.forEach(function(proj) {
-         proj.updatePosition()
-         proj.checkCollision()
-         proj.draw(ctx)
+        proj.updatePosition()
+        proj.checkCollision()
+        proj.draw(ctx)
     })
     OBSTACLES.forEach(obs => {
         obs.draw(ctx)
@@ -304,14 +308,8 @@ function gameLoop() {
     ITEMS.forEach(function(item) {
         item.draw(ctx)
     })
-    player.updatePosition()
     player.draw(ctx)
 
-
-    // // center camera on player
-    // CAMERA_CENTER.x = player.pos.x - WIDTH / 2
-    // CAMERA_CENTER.y = player.pos.y - HEIGHT / 2
-    // screen.setAttribute("viewBox", `${CAMERA_CENTER.x} ${CAMERA_CENTER.y} ${WIDTH} ${HEIGHT}`)
     if (!PAUSE) {
         window.requestAnimationFrame(gameLoop)
     }
