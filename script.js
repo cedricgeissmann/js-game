@@ -10,6 +10,7 @@ const HEIGHT = 15 * TILE_SIZE
 const NS = "http://www.w3.org/2000/svg"
 const PROJECTILES = new Set()
 const ITEMS = new Set()
+const OBSTACLES = new Set()
 const CAMERA_CENTER = new Vector(0, 0)
 const INPUT = new Input()
 let PAUSE = true
@@ -126,6 +127,22 @@ class Item extends GameObject {
     }
 }
 
+class Obstacle extends GameObject {
+    constructor(pos) {
+        super(pos)
+        OBSTACLES.add(this)
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = "brown"
+        ctx.fillRect(this.pos.x, this.pos.y, 20, 20)
+    }
+
+    destroy() {
+        ITEMS.delete(this)
+    }
+}
+
 class Player extends GameObject {
     constructor(pos) {
         super(pos)
@@ -140,8 +157,8 @@ class Player extends GameObject {
         let dirBefore = this.dir.copy()
 
 
-        $$(".can-collide").forEach((obstacle) => {
-            let rect1 = this.obj.getBBox()
+        OBSTACLES.forEach((obstacle) => {
+            let rect1 = this.getBBox()
             let rect2 = obstacle.getBBox()
 
             let diag1 = new Vector(rect1.width, rect1.height)
@@ -170,6 +187,9 @@ class Player extends GameObject {
             2, 0, Math.PI*2)
         ctx.fill()
         this.sprite.draw(ctx, this.pos)
+        ctx.strokeStyle = "black"
+        let bBox = this.getBBox()
+        ctx.strokeRect(bBox.x, bBox.y, bBox.width, bBox.height)
     }
 
     checkCollision() {
@@ -240,6 +260,11 @@ function newGame() {
 
     player = new Player(new Vector(0, 0))
     new Item(new Vector(100, 50))
+
+    for ( let i = 0; i < 10; ++i) {
+        let obs = new Obstacle(new Vector(16 * 10, (i+2)*16))
+    }
+
     PAUSE = false
     window.requestAnimationFrame(gameLoop)
 }
@@ -271,6 +296,9 @@ function gameLoop() {
          proj.updatePosition()
          proj.checkCollision()
          proj.draw(ctx)
+    })
+    OBSTACLES.forEach(obs => {
+        obs.draw(ctx)
     })
     ITEMS.forEach(function(item) {
         item.draw(ctx)
