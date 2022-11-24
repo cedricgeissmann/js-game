@@ -72,3 +72,12 @@ export class Pointer {
         ctx.fillRect(this.pos.x, this.pos.y, 20, 20)
     }
 }
+
+export class Rectangle {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;        
+    }
+}

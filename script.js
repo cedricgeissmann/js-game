@@ -1,4 +1,4 @@
-import { Vector, Input, Pointer } from "./utils.js"
+import { Vector, Input, Pointer, Rectangle } from "./utils.js"
 
 let speed = 0.2
 let player
@@ -8,9 +8,8 @@ const WIDTH = 20 * TILE_SIZE
 const HEIGHT = 15 * TILE_SIZE
 
 const NS = "http://www.w3.org/2000/svg"
-const PROJECTILES = []
-const ITEMS = {}
-let ITEMS_LAST_ID = 0
+const PROJECTILES = new Set()
+const ITEMS = new Set()
 const CAMERA_CENTER = new Vector(0, 0)
 const INPUT = new Input()
 let PAUSE = true
@@ -24,21 +23,20 @@ const pointer = new Pointer()
 class SpriteSheet {
     constructor({url}) {
         this.url = url
-        this.img = document.createElementNS(NS, "image")
-        this.img.setAttribute("href", this.url)
-        this.img.setAttribute("clip-path", "inset(0px 16px 0px 16px")
-        //screen.appendChild(this.img)
-        this.tot = 2
-        this.pos = 0
+        this.img = new Image()
+        this.img.src = this.url
+        this.tot = 3
+        this.animPos = 0
+        this.frameCount = 0
+        this.animType = 0
     }
 
-    draw(pos) {
-        this.img.setAttribute("x", pos.x - TILE_SIZE / 2)
-        this.img.setAttribute("y", pos.y - TILE_SIZE / 2)
-        //this.img.setAttribute("clip-path", `inset(0px ${16 * (this.tot - this.pos)}px 0px ${16 * this.pos}px`)
-        this.pos = (this.pos + 1)
-        if (this.pos > this.tot) {
-            this.pos = 0
+    draw(ctx, pos) {
+        ctx.drawImage(this.img, TILE_SIZE*this.animPos, TILE_SIZE*this.animType, TILE_SIZE, TILE_SIZE, pos.x, pos.y, TILE_SIZE, TILE_SIZE)
+        this.frameCount++
+        if (this.frameCount > 10) {
+            this.animPos = (this.animPos + 1) % this.tot
+            this.frameCount = 0
         }
     }
 }
@@ -47,6 +45,10 @@ class SpriteSheet {
 class GameObject {
     constructor(pos) {
         this.pos = pos
+    }
+
+    getBBox() {
+        return new Rectangle(this.pos.x, this.pos.y, TILE_SIZE, TILE_SIZE)
     }
 }
 
@@ -60,23 +62,21 @@ class Projectile extends GameObject {
         this.radius = 2
         this.trigger = null
 
-        this.projectile = document.createElementNS(NS, "circle")
-        this.projectile.setAttribute("cx", pos.x)
-        this.projectile.setAttribute("cy", pos.y)
-        this.projectile.setAttribute("r", this.radius)
-        this.projectile.setAttribute("fill", "red")
-        PROJECTILES.push(this)
-        //screen.appendChild(this.projectile)
+        PROJECTILES.add(this)
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = "red"
+        ctx.beginPath()
+        ctx.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI*2)
+        ctx.fill()
     }
 
     updatePosition() {
         this.pos = this.pos.add(this.dir)
         if (this.radiusGrowth !== 0) {
             this.radius = this.radius + this.radiusGrowth
-            this.projectile.setAttribute("r", this.radius)
         }
-
-        updateCirclePosition(this.projectile, this.pos)
     }
 
     fire(duration) {
@@ -94,8 +94,7 @@ class Projectile extends GameObject {
     }
 
     destroy() {
-        screen.removeChild(this.projectile)
-        //delete(this)
+        PROJECTILES.delete(this)
     }
 
     checkCollision() {
@@ -114,18 +113,16 @@ class Projectile extends GameObject {
 class Item extends GameObject {
     constructor(pos) {
         super(pos)
-        this.obj = document.createElementNS(NS, "rect")
-        this.obj.setAttribute("x", pos.x)
-        this.obj.setAttribute("y", pos.y)
-        this.obj.setAttribute("width", 20)
-        this.obj.setAttribute("height", 20)
-        this.obj.setAttribute("fill", "blue")
-        this.obj.setAttribute("class", "item")
-        //screen.appendChild(this.obj)
+        ITEMS.add(this)
+    }
 
-        this.id = ITEMS_LAST_ID++
+    draw(ctx) {
+        ctx.fillStyle = "blue"
+        ctx.fillRect(this.pos.x, this.pos.y, 20, 20)
+    }
 
-        ITEMS[this.id] = this
+    destroy() {
+        ITEMS.delete(this)
     }
 }
 
@@ -136,18 +133,6 @@ class Player extends GameObject {
         this.orient = new Vector(0, 0)
 
         this.sprite = new SpriteSheet({url: "res/player.png"})
-
-        this.obj = document.createElementNS(NS, "circle")
-        this.obj.setAttribute("cx", pos.x)
-        this.obj.setAttribute("cy", pos.y)
-        this.obj.setAttribute("r", 10)
-        this.obj.setAttribute("fill", "transparent")
-        //screen.appendChild(this.obj)
-
-        this.orientetion = document.createElementNS(NS, "circle")
-        this.orientetion.setAttribute("r", 5)
-        this.orientetion.setAttribute("fill", "black")
-        //screen.appendChild(this.orientetion)
     }
 
     updatePosition() {
@@ -173,21 +158,25 @@ class Player extends GameObject {
         })
 
         this.pos = this.pos.add(this.dir)
-        updateCirclePosition(this.obj, this.pos)
         this.orient = this.pos.diff(pointer.pos).normalize().scale(20)
-        updateCirclePosition(this.orientetion, this.pos.add(this.orient))
-
-        this.sprite.draw(this.pos)
 
         this.checkCollision()
     }
 
+    draw(ctx) {
+        ctx.beginPath()
+        ctx.arc(this.pos.x + this.orient.x + 10,
+            this.pos.y + this.orient.y + 10,
+            2, 0, Math.PI*2)
+        ctx.fill()
+        this.sprite.draw(ctx, this.pos)
+    }
+
     checkCollision() {
-        Object.values(ITEMS).forEach((item) => {
-            if (checkIntersection(this.obj.getBBox(), item.obj.getBBox())) {
+        ITEMS.forEach((item) => {
+            if (checkIntersection(this.getBBox(), item.getBBox())) {
                 this.pickUp(item)
-                screen.removeChild(item.obj)
-                delete ITEMS[item.id]
+                ITEMS.delete(item)
             }
         })
 
@@ -198,8 +187,7 @@ class Player extends GameObject {
     }
 
     destroy() {
-        screen.removeChild(this.obj)
-        screen.removeChild(this.orientetion)
+        delete this
     }
 }
 
@@ -209,7 +197,7 @@ class Spell {
     constructor () {
         this.name = "Fireball"
         this.value = 1
-        this.duration = 5000
+        this.duration = 2000
         this.cooldown = 5
     }
 
@@ -230,11 +218,6 @@ function checkIntersection(rect1, rect2) {
         }
     }
     return false
-}
-
-function updateCirclePosition(circ, pos) {
-    circ.setAttribute("cx", pos.x)
-    circ.setAttribute("cy", pos.y)
 }
 
 function $(selector) {
@@ -284,11 +267,16 @@ function gameLoop() {
     ctx.clearRect(0, 0, WIDTH, HEIGHT)
     pointer.draw(ctx)
 
-    // PROJECTILES.forEach(function(proj) {
-    //     proj.updatePosition()
-    //     proj.checkCollision()
-    // })
-    // player.updatePosition()
+    PROJECTILES.forEach(function(proj) {
+         proj.updatePosition()
+         proj.checkCollision()
+         proj.draw(ctx)
+    })
+    ITEMS.forEach(function(item) {
+        item.draw(ctx)
+    })
+    player.updatePosition()
+    player.draw(ctx)
 
 
     // // center camera on player
@@ -329,7 +317,7 @@ window.onkeyup = function(ev) {
 }
 
 screen.onmousedown = function(ev) {
-    pointer.updatePosition(ev)
+    pointer.updatePosition(ev, ctx)
     let spell = new Spell()
     spell.cast()
 }
