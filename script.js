@@ -135,7 +135,7 @@ class Obstacle extends GameObject {
 
     draw(ctx) {
         ctx.fillStyle = "brown"
-        ctx.fillRect(this.pos.x, this.pos.y, 20, 20)
+        ctx.fillRect(this.pos.x, this.pos.y, TILE_SIZE, TILE_SIZE)
     }
 
     destroy() {
@@ -154,23 +154,24 @@ class Player extends GameObject {
 
     updatePosition() {
         this.dir = INPUT.getDirection().normalize().scale(this.speed)
-        let dirBefore = this.dir.copy()
-
 
         OBSTACLES.forEach((obstacle) => {
             let rect1 = this.getBBox()
             let rect2 = obstacle.getBBox()
 
-            let diag1 = new Vector(rect1.width, rect1.height)
-            let diag2 = new Vector(rect2.width, rect2.height)
             let p1 = new Vector(rect1.x, rect1.y).add(this.dir)
             let p2 = new Vector(rect2.x, rect2.y)
 
             let dist = p1.diff(p2)
 
-            if (dist.length() <= diag1.length()) {
-                //console.log(dist)
-                this.dir = this.dir.add(dist.neg().normalize().scale(2))
+            if (dist.length() <= TILE_SIZE) {
+                console.log(dist, dist.length())
+                if (Math.abs(dist.x) <= TILE_SIZE) {
+                    this.dir.x = 0
+                }
+                if (Math.abs(dist.y) <= TILE_SIZE) {
+                    this.dir.y = 0
+                }
             }
         })
 
