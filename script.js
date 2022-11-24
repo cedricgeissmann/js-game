@@ -1,4 +1,4 @@
-import { Vector, Input } from "./utils.js"
+import { Vector, Input, Pointer } from "./utils.js"
 
 let speed = 0.2
 let player
@@ -15,13 +15,19 @@ const CAMERA_CENTER = new Vector(0, 0)
 const INPUT = new Input()
 let PAUSE = true
 
+const screen = document.querySelector("#game-screen")
+screen.width = WIDTH
+screen.height = HEIGHT
+const ctx = screen.getContext("2d")
+const pointer = new Pointer()
+
 class SpriteSheet {
     constructor({url}) {
         this.url = url
         this.img = document.createElementNS(NS, "image")
         this.img.setAttribute("href", this.url)
         this.img.setAttribute("clip-path", "inset(0px 16px 0px 16px")
-        screen.appendChild(this.img)
+        //screen.appendChild(this.img)
         this.tot = 2
         this.pos = 0
     }
@@ -60,7 +66,7 @@ class Projectile extends GameObject {
         this.projectile.setAttribute("r", this.radius)
         this.projectile.setAttribute("fill", "red")
         PROJECTILES.push(this)
-        screen.appendChild(this.projectile)
+        //screen.appendChild(this.projectile)
     }
 
     updatePosition() {
@@ -115,7 +121,7 @@ class Item extends GameObject {
         this.obj.setAttribute("height", 20)
         this.obj.setAttribute("fill", "blue")
         this.obj.setAttribute("class", "item")
-        screen.appendChild(this.obj)
+        //screen.appendChild(this.obj)
 
         this.id = ITEMS_LAST_ID++
 
@@ -136,12 +142,12 @@ class Player extends GameObject {
         this.obj.setAttribute("cy", pos.y)
         this.obj.setAttribute("r", 10)
         this.obj.setAttribute("fill", "transparent")
-        screen.appendChild(this.obj)
+        //screen.appendChild(this.obj)
 
         this.orientetion = document.createElementNS(NS, "circle")
         this.orientetion.setAttribute("r", 5)
         this.orientetion.setAttribute("fill", "black")
-        screen.appendChild(this.orientetion)
+        //screen.appendChild(this.orientetion)
     }
 
     updatePosition() {
@@ -194,24 +200,6 @@ class Player extends GameObject {
     destroy() {
         screen.removeChild(this.obj)
         screen.removeChild(this.orientetion)
-    }
-}
-
-class Pointer {
-    constructor() {
-        this.pos = new Vector(0, 0)
-        this.obj = document.createElementNS(NS, "circle")
-        this.obj.setAttribute("cx", 0)
-        this.obj.setAttribute("cy", 0)
-        this.obj.setAttribute("r", 5)
-        this.obj.setAttribute("fill", "red")
-        document.querySelector("#game > svg").appendChild(this.obj)
-    }
-
-    updatePosition(ev) {
-        this.pos.x = ev.offsetX / screen.clientWidth * WIDTH + (player.pos.x - WIDTH / 2)
-        this.pos.y = ev.offsetY / screen.clientHeight * HEIGHT + (player.pos.y - HEIGHT / 2)
-        updateCirclePosition(this.obj, this.pos)
     }
 }
 
@@ -290,21 +278,23 @@ function showMenu() {
     PAUSE = true
 }
 
-const screen = document.querySelector("#game-screen")
-const pointer = new Pointer()
+
 
 function gameLoop() {
-    PROJECTILES.forEach(function(proj) {
-        proj.updatePosition()
-        proj.checkCollision()
-    })
-    player.updatePosition()
+    ctx.clearRect(0, 0, WIDTH, HEIGHT)
+    pointer.draw(ctx)
+
+    // PROJECTILES.forEach(function(proj) {
+    //     proj.updatePosition()
+    //     proj.checkCollision()
+    // })
+    // player.updatePosition()
 
 
-    // center camera on player
-    CAMERA_CENTER.x = player.pos.x - WIDTH / 2
-    CAMERA_CENTER.y = player.pos.y - HEIGHT / 2
-    screen.setAttribute("viewBox", `${CAMERA_CENTER.x} ${CAMERA_CENTER.y} ${WIDTH} ${HEIGHT}`)
+    // // center camera on player
+    // CAMERA_CENTER.x = player.pos.x - WIDTH / 2
+    // CAMERA_CENTER.y = player.pos.y - HEIGHT / 2
+    // screen.setAttribute("viewBox", `${CAMERA_CENTER.x} ${CAMERA_CENTER.y} ${WIDTH} ${HEIGHT}`)
     if (!PAUSE) {
         window.requestAnimationFrame(gameLoop)
     }
@@ -345,7 +335,7 @@ screen.onmousedown = function(ev) {
 }
 
 screen.onmousemove = function(ev) {
-    pointer.updatePosition(ev)
+    pointer.updatePosition(ev, ctx)
 }
 
 $("#new-game-btn").addEventListener("click", newGame)

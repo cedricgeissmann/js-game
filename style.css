@@ -28,7 +28,7 @@ body {
     width: 100%;
 }
 
-#game > svg {
+#game > canvas {
     background-color: forestgreen;
     height: 78.125%;
     width: 100%;

@@ -56,3 +56,19 @@ export class Input {
         return new Vector(this.right - this.left, this.down - this.up)
     }
 }
+
+export class Pointer {
+    constructor() {
+        this.pos = new Vector(0, 0)
+    }
+
+    updatePosition(ev, screen) {
+        this.pos.x = ev.offsetX / screen.canvas.clientWidth * 320 //+ (player.pos.x - WIDTH / 2)
+        this.pos.y = ev.offsetY / screen.canvas.clientHeight * 240 //+ (player.pos.y - HEIGHT / 2)
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = "red"
+        ctx.fillRect(this.pos.x, this.pos.y, 20, 20)
+    }
+}
