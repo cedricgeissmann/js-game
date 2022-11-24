@@ -176,7 +176,8 @@ class Player extends GameObject {
         })
 
         this.pos = this.pos.add(this.dir)
-        this.orient = this.pos.diff(pointer.pos).normalize().scale(20)
+        // TODO: This only works if the player is in the middle of the viewport
+        this.orient = new Vector(WIDTH/2, HEIGHT/2).diff(pointer.pos).normalize().scale(20)
 
         this.checkCollision()
     }
@@ -290,16 +291,19 @@ function showMenu() {
 
 
 function gameLoop() {
-    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    
     ctx.clearRect(0, 0, WIDTH, HEIGHT)
+    
     player.updatePosition()
-    
-    ctx.translate(-(player.pos.x - WIDTH / 2), -(player.pos.y - HEIGHT / 2))
-    
-    pointer.draw(ctx)
+
     PROJECTILES.forEach(function(proj) {
         proj.updatePosition()
         proj.checkCollision()
+    })
+    
+    ctx.translate(-(player.pos.x - WIDTH / 2), -(player.pos.y - HEIGHT / 2))
+    
+    PROJECTILES.forEach(function(proj) {
         proj.draw(ctx)
     })
     OBSTACLES.forEach(obs => {
@@ -309,6 +313,9 @@ function gameLoop() {
         item.draw(ctx)
     })
     player.draw(ctx)
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    pointer.draw(ctx)
 
     if (!PAUSE) {
         window.requestAnimationFrame(gameLoop)
