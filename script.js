@@ -154,8 +154,7 @@ async function newGame() {
 
   new Item(new Vector(100, 50));
 
-  PAUSE = false;
-  window.requestAnimationFrame(gameLoop);
+  runGame()
 }
 
 function resumeGame() {
@@ -163,8 +162,7 @@ function resumeGame() {
   const game = document.querySelector("#game");
   menu.style.display = "none";
   game.style.display = "block";
-  PAUSE = false;
-  window.requestAnimationFrame(gameLoop);
+  runGame()
 }
 
 function showMenu() {
@@ -205,7 +203,28 @@ function gameLoop() {
 
   if (!PAUSE) {
     window.requestAnimationFrame(gameLoop);
-  }
+}
+}
+
+function pauseGame() {
+    PAUSE = true
+}
+
+function runGame() {
+    PAUSE = false
+    window.requestAnimationFrame(gameLoop);
+}
+
+function showOverlay() {
+    const overlay = document.querySelector("#overlay")
+    overlay.style.display = "block"
+    pauseGame()
+}
+
+function hideOverlay() {
+    const overlay = document.querySelector("#overlay")
+    overlay.style.display = "none"
+    runGame()
 }
 
 window.onkeydown = function (ev) {
@@ -217,7 +236,9 @@ window.onkeydown = function (ev) {
     INPUT.up = 1;
   } else if (ev.key === "s") {
     INPUT.down = 1;
-  } else if (ev.code === "Space") {
+  } else if (ev.code === "Tab") {
+    showOverlay()
+    return false;
   } else if (ev.code === "Escape") {
     showMenu();
   }
@@ -232,6 +253,9 @@ window.onkeyup = function (ev) {
     INPUT.up = 0;
   } else if (ev.key === "s") {
     INPUT.down = 0;
+  } else if (ev.code === "Tab") {
+    hideOverlay()
+    return false
   }
 };
 
