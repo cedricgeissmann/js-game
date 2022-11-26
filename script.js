@@ -1,32 +1,14 @@
-import { Vector, Input, Pointer } from "./utils.js";
+import { Vector, Input } from "./utils.js";
 import { Map } from "./map.js";
-import { GameObject } from "./game_objects.js";
+import { GameObject, Pointer } from "./game_objects.js";
+import { Game } from "./game.js";
 
-const CONFIG = {
-  tileSize: 16,
-};
-
-const TILE_SIZE = 16;
-const WIDTH = 20 * TILE_SIZE;
-const HEIGHT = 15 * TILE_SIZE;
-
-const NS = "http://www.w3.org/2000/svg";
-const PROJECTILES = new Set();
-const LAYERS = {
-  background: new Set(),
-  wall: new Set(),
-  player: null,
-  pointer: new Pointer(),
-  items: new Set()
-};
-const CAMERA_CENTER = new Vector(0, 0);
-const INPUT = new Input();
-let PAUSE = true;
+Game.INPUT = new Input();
 
 const screen = document.querySelector("#game-screen");
-screen.width = WIDTH;
-screen.height = HEIGHT;
-const ctx = screen.getContext("2d");
+screen.width = Game.WIDTH;
+screen.height = Game.HEIGHT;
+Game.ctx = screen.getContext("2d");
 
 class Projectile extends GameObject {
   constructor(pos, dir, speed) {
@@ -38,7 +20,7 @@ class Projectile extends GameObject {
     this.radius = 2;
     this.trigger = null;
 
-    PROJECTILES.add(this);
+    Game.LAYERS.projectiles.add(this);
   }
 
   draw(ctx) {
@@ -78,7 +60,7 @@ class Projectile extends GameObject {
   }
 
   destroy() {
-    PROJECTILES.delete(this);
+    Game.LAYERS.projectiles.delete(this);
   }
 
   checkCollision() {
@@ -97,7 +79,7 @@ class Projectile extends GameObject {
 class Item extends GameObject {
   constructor(pos) {
     super(pos);
-    LAYERS.items.add(this);
+    Game.LAYERS.items.add(this);
   }
 
   draw(ctx) {
@@ -106,7 +88,7 @@ class Item extends GameObject {
   }
 
   destroy() {
-    LAYERS.items.delete(this);
+    Game.LAYERS.items.delete(this);
   }
 }
 
@@ -120,8 +102,8 @@ class Spell {
 
   cast() {
     this.projectile = new Projectile(
-      LAYERS.player.pos.copy(),
-      LAYERS.player.orient,
+      Game.LAYERS.player.pos.copy(),
+      Game.LAYERS.player.orient,
       2
     );
     this.projectile.fire(this.duration);
@@ -146,15 +128,17 @@ async function newGame() {
 
   let map = new Map("maps/level1.txt");
   await map.loadMap();
-  map.instantiate({ layers: LAYERS, config: CONFIG });
+  map.instantiate({ layers: Game.LAYERS });
 
-  if (LAYERS.player != null) {
-    LAYERS.player.destroy();
+  Game.LAYERS.pointer = new Pointer();
+
+  if (Game.LAYERS.player != null) {
+    Game.LAYERS.player.destroy();
   }
 
   new Item(new Vector(100, 50));
 
-  runGame()
+  Game.runGame();
 }
 
 function resumeGame() {
@@ -162,7 +146,7 @@ function resumeGame() {
   const game = document.querySelector("#game");
   menu.style.display = "none";
   game.style.display = "block";
-  runGame()
+  runGame();
 }
 
 function showMenu() {
@@ -170,74 +154,32 @@ function showMenu() {
   const game = document.querySelector("#game");
   menu.style.display = "block";
   game.style.display = "none";
-  PAUSE = true;
-}
-
-function gameLoop() {
-  ctx.clearRect(0, 0, WIDTH, HEIGHT);
-
-  LAYERS.player.updatePosition({layers: LAYERS, input: INPUT});
-
-  PROJECTILES.forEach(function (proj) {
-    proj.updatePosition();
-    proj.checkCollision();
-  });
-
-  ctx.translate(
-    -(LAYERS.player.pos.x - WIDTH / 2),
-    -(LAYERS.player.pos.y - HEIGHT / 2)
-  );
-
-  LAYERS.wall.forEach((wall) => wall.draw(ctx));
-
-  LAYERS.items.forEach(function (item) {
-    item.draw(ctx);
-  });
-  PROJECTILES.forEach(function (proj) {
-    proj.draw(ctx);
-  });
-  LAYERS.player.draw(ctx);
-
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  LAYERS.pointer.draw(ctx);
-
-  if (!PAUSE) {
-    window.requestAnimationFrame(gameLoop);
-}
-}
-
-function pauseGame() {
-    PAUSE = true
-}
-
-function runGame() {
-    PAUSE = false
-    window.requestAnimationFrame(gameLoop);
+  Game.pauseGame();
 }
 
 function showOverlay() {
-    const overlay = document.querySelector("#overlay")
-    overlay.style.display = "block"
-    pauseGame()
+  const overlay = document.querySelector("#overlay");
+  overlay.style.display = "block";
+  Game.pauseGame();
 }
 
 function hideOverlay() {
-    const overlay = document.querySelector("#overlay")
-    overlay.style.display = "none"
-    runGame()
+  const overlay = document.querySelector("#overlay");
+  overlay.style.display = "none";
+  Game.runGame();
 }
 
 window.onkeydown = function (ev) {
   if (ev.key === "d") {
-    INPUT.right = 1;
+    Game.INPUT.right = 1;
   } else if (ev.key === "a") {
-    INPUT.left = 1;
+    Game.INPUT.left = 1;
   } else if (ev.key === "w") {
-    INPUT.up = 1;
+    Game.INPUT.up = 1;
   } else if (ev.key === "s") {
-    INPUT.down = 1;
+    Game.INPUT.down = 1;
   } else if (ev.code === "Tab") {
-    showOverlay()
+    showOverlay();
     return false;
   } else if (ev.code === "Escape") {
     showMenu();
@@ -246,27 +188,27 @@ window.onkeydown = function (ev) {
 
 window.onkeyup = function (ev) {
   if (ev.key === "d") {
-    INPUT.right = 0;
+    Game.INPUT.right = 0;
   } else if (ev.key === "a") {
-    INPUT.left = 0;
+    Game.INPUT.left = 0;
   } else if (ev.key === "w") {
-    INPUT.up = 0;
+    Game.INPUT.up = 0;
   } else if (ev.key === "s") {
-    INPUT.down = 0;
+    Game.INPUT.down = 0;
   } else if (ev.code === "Tab") {
-    hideOverlay()
-    return false
+    hideOverlay();
+    return false;
   }
 };
 
 screen.onmousedown = function (ev) {
-  LAYERS.pointer.updatePosition(ev, ctx);
+  Game.LAYERS.pointer.updatePosition(ev, Game.ctx);
   let spell = new Spell();
   spell.cast();
 };
 
 screen.onmousemove = function (ev) {
-  LAYERS.pointer.updatePosition(ev, ctx);
+  Game.LAYERS.pointer.updatePosition(ev, Game.ctx);
 };
 
 $("#new-game-btn").addEventListener("click", newGame);
