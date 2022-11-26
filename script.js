@@ -98,6 +98,7 @@ class Item extends GameObject {
   constructor(pos) {
     super(pos);
     LAYERS.items.add(this);
+    this.name = "T"
   }
 
   draw(ctx) {

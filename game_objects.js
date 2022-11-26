@@ -99,9 +99,28 @@ export class Player extends GameObject {
 
   pickUp(item) {
     console.log("Implement pick up: ", item);
+    createInventoryItem(item)
+
   }
 
   destroy() {
     delete this;
   }
+}
+
+
+function createInventoryItem(item) {
+  const inventoryList = document.querySelector("#inventory-list")
+
+  const li = document.createElement("li")
+  li.classList.add("inventory-list-item")
+  
+  const it = document.createElement("div")
+  it.classList.add("inventory-item")
+  it.textContent = item.name
+
+  li.appendChild(it)
+
+
+  inventoryList.appendChild(li)
 }

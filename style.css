@@ -64,7 +64,7 @@ body {
     padding-top: 20px;
 }
 
-.inventory-list {
+#inventory-list {
     list-style: none;
     display: grid;
     grid-template-columns: auto auto auto auto;
