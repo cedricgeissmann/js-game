@@ -1,17 +1,16 @@
 import { Vector, Rectangle, checkIntersection } from "./utils.js";
 import { SpriteSheet } from "./sprite_sheet.js";
+import { Game } from "./game.js"
 
-const TILE_SIZE = 16;
-const WIDTH = 20 * TILE_SIZE;
-const HEIGHT = 15 * TILE_SIZE;
 
-export class GameObject {
+export class GameObject extends Game {
   constructor(pos) {
+    super()
     this.pos = pos;
   }
 
   getBBox() {
-    return new Rectangle(this.pos.x, this.pos.y, TILE_SIZE, TILE_SIZE);
+    return new Rectangle(this.pos.x, this.pos.y, Game.TILE_SIZE, Game.TILE_SIZE);
   }
 }
 
@@ -47,12 +46,12 @@ export class Player extends GameObject {
 
       let dist = p1.diff(p2);
 
-      if (dist.length() <= TILE_SIZE) {
+      if (dist.length() <= Game.TILE_SIZE) {
         console.log(dist, dist.length());
-        if (Math.abs(dist.x) <= TILE_SIZE) {
+        if (Math.abs(dist.x) <= Game.TILE_SIZE) {
           this.dir.x = 0;
         }
-        if (Math.abs(dist.y) <= TILE_SIZE) {
+        if (Math.abs(dist.y) <= Game.TILE_SIZE) {
           this.dir.y = 0;
         }
       }
@@ -60,7 +59,7 @@ export class Player extends GameObject {
 
     this.pos = this.pos.add(this.dir);
     // TODO: This only works if the player is in the middle of the viewport
-    this.orient = new Vector(WIDTH / 2, HEIGHT / 2)
+    this.orient = new Vector(Game.WIDTH / 2, Game.HEIGHT / 2)
       .diff(layers.pointer.pos)
       .normalize()
       .scale(20);
@@ -81,7 +80,7 @@ export class Player extends GameObject {
     this.sprite.draw({
       ctx: ctx,
       pos: this.pos,
-      config: { tileSize: TILE_SIZE },
+      config: { tileSize: Game.TILE_SIZE },
     });
     ctx.strokeStyle = "black";
     let bBox = this.getBBox();
@@ -123,4 +122,20 @@ function createInventoryItem(item) {
 
 
   inventoryList.appendChild(li)
+}
+
+export class Pointer {
+  constructor() {
+      this.pos = new Vector(0, 0)
+  }
+
+  updatePosition(ev, screen) {
+      this.pos.x = ev.offsetX / screen.canvas.clientWidth * 320 //+ (player.pos.x - WIDTH / 2)
+      this.pos.y = ev.offsetY / screen.canvas.clientHeight * 240 //+ (player.pos.y - HEIGHT / 2)
+  }
+
+  draw(ctx) {
+      ctx.fillStyle = "red"
+      ctx.fillRect(this.pos.x, this.pos.y, 20, 20)
+  }
 }
