@@ -1,16 +1,28 @@
 import { Vector, Rectangle, checkIntersection } from "./utils.js";
 import { SpriteSheet } from "./sprite_sheet.js";
 import { Game } from "./game.js"
+import { Spell } from "./spells.js"
 
 
 export class GameObject extends Game {
   constructor(pos) {
     super()
     this.pos = pos;
+    this.width = Game.TILE_SIZE;
+    this.height = Game.TILE_SIZE;
+    this.middle = new Vector(this.width / 2, this.height / 2)
   }
 
   getBBox() {
-    return new Rectangle(this.pos.x, this.pos.y, Game.TILE_SIZE, Game.TILE_SIZE);
+    return new Rectangle(this.pos.x, this.pos.y, this.width, this.height);
+  }
+
+  getCenter() {
+    return new Vector(this.pos.x + this.width / 2, this.pos.y + this.height / 2)
+  }
+
+  getMiddle() {
+    return this.middle;
   }
 }
 
@@ -60,7 +72,7 @@ export class Player extends GameObject {
     this.pos = this.pos.add(this.dir);
     // TODO: This only works if the player is in the middle of the viewport
     this.orient = new Vector(Game.WIDTH / 2, Game.HEIGHT / 2)
-      .diff(layers.pointer.pos)
+      .diff(layers.pointer.getCenter())
       .normalize()
       .scale(20);
 
@@ -70,8 +82,8 @@ export class Player extends GameObject {
   draw(ctx) {
     ctx.beginPath();
     ctx.arc(
-      this.pos.x + this.orient.x + 10,
-      this.pos.y + this.orient.y + 10,
+      this.pos.x + this.orient.x,
+      this.pos.y + this.orient.y,
       2,
       0,
       Math.PI * 2
@@ -105,6 +117,77 @@ export class Player extends GameObject {
   destroy() {
     delete this;
   }
+
+  castSpell() {
+    let spell = new Spell();
+    spell.cast();
+  }
+}
+
+export class Projectile extends GameObject {
+  constructor(pos, dir, speed) {
+    super(pos);
+    this.dir = dir.normalize().scale(speed);
+    this.speed = speed;
+
+    this.radiusGrowth = 0;
+    this.radius = 2;
+    this.trigger = null;
+
+    Game.LAYERS.projectiles.add(this);
+  }
+
+  draw(ctx) {
+    ctx.fillStyle = "red";
+    ctx.beginPath();
+    ctx.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  updatePosition() {
+    this.pos = this.pos.add(this.dir);
+    if (this.radiusGrowth !== 0) {
+      this.radius = this.radius + this.radiusGrowth;
+    }
+  }
+
+  fire(duration) {
+    this.trigger = setTimeout(
+      function (proj) {
+        proj.speed = 0;
+        proj.explode();
+      },
+      duration,
+      this
+    );
+  }
+
+  explode() {
+    this.radiusGrowth = 3;
+    setTimeout(
+      function (proj) {
+        proj.destroy();
+      },
+      200,
+      this
+    );
+  }
+
+  destroy() {
+    Game.LAYERS.projectiles.delete(this);
+  }
+
+  checkCollision() {
+    Game.LAYERS.wall.forEach((elem) => {
+      checkIntersection(this.getBBox(), elem.getBBox());
+      if (checkIntersection(this.getBBox(), elem.getBBox())) {
+        clearTimeout(this.trigger);
+        if (this.radiusGrowth === 0) {
+          this.explode();
+        }
+      }
+    });
+  }
 }
 
 
@@ -124,18 +207,20 @@ function createInventoryItem(item) {
   inventoryList.appendChild(li)
 }
 
-export class Pointer {
+export class Pointer extends GameObject{
   constructor() {
-      this.pos = new Vector(0, 0)
+      super(new Vector(0, 0))
+      this.width = 8
+      this.height = 8
   }
 
-  updatePosition(ev, screen) {
-      this.pos.x = ev.offsetX / screen.canvas.clientWidth * 320 //+ (player.pos.x - WIDTH / 2)
-      this.pos.y = ev.offsetY / screen.canvas.clientHeight * 240 //+ (player.pos.y - HEIGHT / 2)
+  updatePosition(ev) {
+      this.pos.x = ev.offsetX / Game.screen.clientWidth * 320 + this.getMiddle().x
+      this.pos.y = ev.offsetY / Game.screen.clientHeight * 240 + this.getMiddle().y
   }
 
   draw(ctx) {
-      ctx.fillStyle = "red"
-      ctx.fillRect(this.pos.x, this.pos.y, 20, 20)
+      ctx.fillStyle = "black"
+      ctx.fillRect(this.pos.x, this.pos.y, this.width, this.height)
   }
 }

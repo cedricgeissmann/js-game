@@ -11,6 +11,7 @@ export class Game {
     projectiles: new Set(),
   };
 
+  static screen;
   static ctx;
   static INPUT;
 
