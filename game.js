@@ -29,7 +29,8 @@ export class Game {
   }
 
   static gameLoop() {
-    Game.ctx.clearRect(0, 0, Game.WIDTH, Game.HEIGHT);
+    const transform = Game.ctx.getTransform()
+    Game.ctx.clearRect(-transform.e, -transform.f, Game.WIDTH, Game.HEIGHT);
 
     Game.LAYERS.player.updatePosition({
       layers: Game.LAYERS,
@@ -41,7 +42,7 @@ export class Game {
       proj.checkCollision();
     });
 
-    Game.ctx.translate(
+    Game.ctx.setTransform(1, 0, 0, 1,
       -(Game.LAYERS.player.pos.x - Game.WIDTH / 2),
       -(Game.LAYERS.player.pos.y - Game.HEIGHT / 2)
     );
@@ -56,7 +57,6 @@ export class Game {
     });
     Game.LAYERS.player.draw(Game.ctx);
 
-    Game.ctx.setTransform(1, 0, 0, 1, 0, 0);
     Game.LAYERS.pointer.draw(Game.ctx);
 
     if (Game.RUNNING) {

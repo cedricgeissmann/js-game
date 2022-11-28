@@ -71,7 +71,7 @@ export class Player extends GameObject {
 
     this.pos = this.pos.add(this.dir);
     // TODO: This only works if the player is in the middle of the viewport
-    this.orient = new Vector(Game.WIDTH / 2, Game.HEIGHT / 2)
+    this.orient = this.getCenter()
       .diff(layers.pointer.getCenter())
       .normalize()
       .scale(20);
@@ -81,9 +81,10 @@ export class Player extends GameObject {
 
   draw(ctx) {
     ctx.beginPath();
+    const center = this.getCenter()
     ctx.arc(
-      this.pos.x + this.orient.x,
-      this.pos.y + this.orient.y,
+      center.x + this.orient.x,
+      center.y + this.orient.y,
       2,
       0,
       Math.PI * 2
@@ -215,8 +216,9 @@ export class Pointer extends GameObject{
   }
 
   updatePosition(ev) {
-      this.pos.x = ev.offsetX / Game.screen.clientWidth * 320 + this.getMiddle().x
-      this.pos.y = ev.offsetY / Game.screen.clientHeight * 240 + this.getMiddle().y
+    const trans = Game.ctx.getTransform()
+      this.pos.x = ev.offsetX / Game.screen.clientWidth * Game.WIDTH - trans.e
+      this.pos.y = ev.offsetY / Game.screen.clientHeight * Game.HEIGHT - trans.f
   }
 
   draw(ctx) {

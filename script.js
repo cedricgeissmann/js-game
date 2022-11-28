@@ -3,8 +3,6 @@ import { Map } from "./map.js";
 import { GameObject, Pointer } from "./game_objects.js";
 import { Game } from "./game.js";
 
-Game.INPUT = new Input();
-
 
 
 class Item extends GameObject {
@@ -29,6 +27,8 @@ async function newGame() {
   Game.screen.width = Game.WIDTH;
   Game.screen.height = Game.HEIGHT;
   Game.ctx = Game.screen.getContext("2d");
+
+  Game.INPUT = new Input();
 
   addEventListeners();
 
