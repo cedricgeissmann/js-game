@@ -1,16 +1,15 @@
 import { Vector, Rectangle, checkIntersection } from "./utils.js";
 import { SpriteSheet } from "./sprite_sheet.js";
-import { Game } from "./game.js"
-import { Spell } from "./spells.js"
-
+import { Game } from "./game.js";
+import { Spell } from "./spells.js";
 
 export class GameObject extends Game {
   constructor(pos) {
-    super()
+    super();
     this.pos = pos;
     this.width = Game.TILE_SIZE;
     this.height = Game.TILE_SIZE;
-    this.middle = new Vector(this.width / 2, this.height / 2)
+    this.middle = new Vector(this.width / 2, this.height / 2);
   }
 
   getBBox() {
@@ -18,7 +17,10 @@ export class GameObject extends Game {
   }
 
   getCenter() {
-    return new Vector(this.pos.x + this.width / 2, this.pos.y + this.height / 2)
+    return new Vector(
+      this.pos.x + this.width / 2,
+      this.pos.y + this.height / 2
+    );
   }
 
   getMiddle() {
@@ -31,9 +33,9 @@ export class Wall extends GameObject {
     super(pos);
   }
 
-  draw(ctx) {
-    ctx.fillStyle = "brown";
-    ctx.fillRect(this.pos.x, this.pos.y, 16, 16);
+  draw() {
+    Game.ctx.fillStyle = "brown";
+    Game.ctx.fillRect(this.pos.x, this.pos.y, 16, 16);
   }
 }
 
@@ -46,7 +48,7 @@ export class Player extends GameObject {
     this.sprite = new SpriteSheet({ url: "res/player.png" });
   }
 
-  updatePosition({ layers, input}) {
+  updatePosition({ layers, input }) {
     this.dir = input.getDirection().normalize().scale(this.speed);
 
     layers.wall.forEach((obstacle) => {
@@ -70,37 +72,33 @@ export class Player extends GameObject {
     });
 
     this.pos = this.pos.add(this.dir);
-    // TODO: This only works if the player is in the middle of the viewport
+
     this.orient = this.getCenter()
       .diff(layers.pointer.getCenter())
       .normalize()
       .scale(20);
 
-    this.checkCollision({layers});
+    this.checkCollision({ layers });
   }
 
-  draw(ctx) {
-    ctx.beginPath();
-    const center = this.getCenter()
-    ctx.arc(
+  draw() {
+    Game.ctx.beginPath();
+    const center = this.getCenter();
+    Game.ctx.arc(
       center.x + this.orient.x,
       center.y + this.orient.y,
       2,
       0,
       Math.PI * 2
     );
-    ctx.fill();
-    this.sprite.draw({
-      ctx: ctx,
-      pos: this.pos,
-      config: { tileSize: Game.TILE_SIZE },
-    });
-    ctx.strokeStyle = "black";
+    Game.ctx.fill();
+    this.sprite.draw({ pos: this.pos });
+    Game.ctx.strokeStyle = "black";
     let bBox = this.getBBox();
-    ctx.strokeRect(bBox.x, bBox.y, bBox.width, bBox.height);
+    Game.ctx.strokeRect(bBox.x, bBox.y, bBox.width, bBox.height);
   }
 
-  checkCollision({layers}) {
+  checkCollision({ layers }) {
     layers.items.forEach((item) => {
       if (checkIntersection(this.getBBox(), item.getBBox())) {
         this.pickUp(item);
@@ -111,8 +109,7 @@ export class Player extends GameObject {
 
   pickUp(item) {
     console.log("Implement pick up: ", item);
-    createInventoryItem(item)
-
+    createInventoryItem(item);
   }
 
   destroy() {
@@ -138,11 +135,11 @@ export class Projectile extends GameObject {
     Game.LAYERS.projectiles.add(this);
   }
 
-  draw(ctx) {
-    ctx.fillStyle = "red";
-    ctx.beginPath();
-    ctx.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI * 2);
-    ctx.fill();
+  draw() {
+    Game.ctx.fillStyle = "red";
+    Game.ctx.beginPath();
+    Game.ctx.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI * 2);
+    Game.ctx.fill();
   }
 
   updatePosition() {
@@ -191,38 +188,37 @@ export class Projectile extends GameObject {
   }
 }
 
-
 function createInventoryItem(item) {
-  const inventoryList = document.querySelector("#inventory-list")
+  const inventoryList = document.querySelector("#inventory-list");
 
-  const li = document.createElement("li")
-  li.classList.add("inventory-list-item")
-  
-  const it = document.createElement("div")
-  it.classList.add("inventory-item")
-  it.textContent = item.name
+  const li = document.createElement("li");
+  li.classList.add("inventory-list-item");
 
-  li.appendChild(it)
+  const it = document.createElement("div");
+  it.classList.add("inventory-item");
+  it.textContent = item.name;
 
+  li.appendChild(it);
 
-  inventoryList.appendChild(li)
+  inventoryList.appendChild(li);
 }
 
-export class Pointer extends GameObject{
+export class Pointer extends GameObject {
   constructor() {
-      super(new Vector(0, 0))
-      this.width = 8
-      this.height = 8
+    super(new Vector(0, 0));
+    this.width = 8;
+    this.height = 8;
   }
 
   updatePosition(ev) {
-    const trans = Game.ctx.getTransform()
-      this.pos.x = ev.offsetX / Game.screen.clientWidth * Game.WIDTH - trans.e
-      this.pos.y = ev.offsetY / Game.screen.clientHeight * Game.HEIGHT - trans.f
+    const trans = Game.ctx.getTransform();
+    this.pos.x = (ev.offsetX / Game.screen.clientWidth) * Game.WIDTH - trans.e;
+    this.pos.y =
+      (ev.offsetY / Game.screen.clientHeight) * Game.HEIGHT - trans.f;
   }
 
-  draw(ctx) {
-      ctx.fillStyle = "black"
-      ctx.fillRect(this.pos.x, this.pos.y, this.width, this.height)
+  draw() {
+    Game.ctx.fillStyle = "black";
+    Game.ctx.fillRect(this.pos.x, this.pos.y, this.width, this.height);
   }
 }

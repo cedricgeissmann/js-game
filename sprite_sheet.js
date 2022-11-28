@@ -1,3 +1,5 @@
+import { Game } from "./game.js"
+
 export class SpriteSheet {
   constructor({ url }) {
     this.url = url;
@@ -9,17 +11,17 @@ export class SpriteSheet {
     this.animType = 0;
   }
 
-  draw({ ctx, pos, config }) {
-    ctx.drawImage(
+  draw({pos}) {
+    Game.ctx.drawImage(
       this.img,
-      config.tileSize * this.animPos,
-      config.tileSize * this.animType,
-      config.tileSize,
-      config.tileSize,
+      Game.TILE_SIZE * this.animPos,
+      Game.TILE_SIZE * this.animType,
+      Game.TILE_SIZE,
+      Game.TILE_SIZE,
       pos.x,
       pos.y,
-      config.tileSize,
-      config.tileSize
+      Game.TILE_SIZE,
+      Game.TILE_SIZE
     );
     this.frameCount++;
     if (this.frameCount > 10) {

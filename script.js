@@ -12,9 +12,9 @@ class Item extends GameObject {
     Game.LAYERS.items.add(this);
   }
 
-  draw(ctx) {
-    ctx.fillStyle = "blue";
-    ctx.fillRect(this.pos.x, this.pos.y, 20, 20);
+  draw() {
+    Game.ctx.fillStyle = "blue";
+    Game.ctx.fillRect(this.pos.x, this.pos.y, 20, 20);
   }
 
   destroy() {
@@ -114,12 +114,12 @@ function addEventListeners() {
   };
 
   Game.screen.onmousedown = function (ev) {
-    Game.LAYERS.pointer.updatePosition(ev, Game.ctx);
+    Game.LAYERS.pointer.updatePosition(ev);
     Game.LAYERS.player.castSpell()
   };
 
   Game.screen.onmousemove = function (ev) {
-    Game.LAYERS.pointer.updatePosition(ev, Game.ctx);
+    Game.LAYERS.pointer.updatePosition(ev);
   };
 }
 

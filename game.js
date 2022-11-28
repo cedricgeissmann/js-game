@@ -47,17 +47,17 @@ export class Game {
       -(Game.LAYERS.player.pos.y - Game.HEIGHT / 2)
     );
 
-    Game.LAYERS.wall.forEach((wall) => wall.draw(Game.ctx));
+    Game.LAYERS.wall.forEach((wall) => wall.draw());
 
     Game.LAYERS.items.forEach(function (item) {
-      item.draw(Game.ctx);
+      item.draw();
     });
     Game.LAYERS.projectiles.forEach(function (proj) {
-      proj.draw(Game.ctx);
+      proj.draw();
     });
-    Game.LAYERS.player.draw(Game.ctx);
+    Game.LAYERS.player.draw();
 
-    Game.LAYERS.pointer.draw(Game.ctx);
+    Game.LAYERS.pointer.draw();
 
     if (Game.RUNNING) {
       window.requestAnimationFrame(Game.gameLoop);
