@@ -10,6 +10,11 @@ export class GameObject extends Game {
     this.width = Game.TILE_SIZE;
     this.height = Game.TILE_SIZE;
     this.middle = new Vector(this.width / 2, this.height / 2);
+
+    this.canDie = true
+    this.hp = 30
+
+    this.effects = new Set()
   }
 
   getBBox() {
@@ -26,6 +31,26 @@ export class GameObject extends Game {
   getMiddle() {
     return this.middle;
   }
+
+  destroy() { }
+
+  addSpellEffect( effect ) {
+    if (this.effects.has(effect)) return
+    this.effects.add(effect)
+    effect.handle(this)
+  }
+
+  damageFor(prop) {
+    console.log("Damage for: ", prop.dmg)
+    this.hp = this.hp - prop.dmg
+    this.checkAlive()
+  }
+
+  checkAlive() {
+    if (this.canDie && this.hp <= 0) {
+      this.destroy()
+    }
+  }
 }
 
 export class Wall extends GameObject {
@@ -34,8 +59,22 @@ export class Wall extends GameObject {
   }
 
   draw() {
+    
     Game.ctx.fillStyle = "brown";
     Game.ctx.fillRect(this.pos.x, this.pos.y, 16, 16);
+  }
+
+  damageFor(prop) {
+    let dmgFactor = 1
+    if (prop.type === "magic") {
+      dmgFactor = 0.5
+    }
+    prop.dmg *= dmgFactor
+    super.damageFor(prop)
+  }
+
+  destroy() {
+    Game.LAYERS.wall.delete(this)
   }
 }
 
@@ -123,10 +162,11 @@ export class Player extends GameObject {
 }
 
 export class Projectile extends GameObject {
-  constructor(pos, dir, speed) {
+  constructor(pos, dir, speed, spell) {
     super(pos);
     this.dir = dir.normalize().scale(speed);
     this.speed = speed;
+    this.spell = spell
 
     this.radiusGrowth = 0;
     this.radius = 2;
@@ -149,17 +189,6 @@ export class Projectile extends GameObject {
     }
   }
 
-  fire(duration) {
-    this.trigger = setTimeout(
-      function (proj) {
-        proj.speed = 0;
-        proj.explode();
-      },
-      duration,
-      this
-    );
-  }
-
   explode() {
     this.radiusGrowth = 3;
     setTimeout(
@@ -175,12 +204,18 @@ export class Projectile extends GameObject {
     Game.LAYERS.projectiles.delete(this);
   }
 
+  // Hand the element from the collision back to the spell to resolve the spell logic.
+  applyEffect(elem) {
+    this.spell.applyEffect(elem)
+  }
+
   checkCollision() {
     Game.LAYERS.wall.forEach((elem) => {
       checkIntersection(this.getBBox(), elem.getBBox());
       if (checkIntersection(this.getBBox(), elem.getBBox())) {
+        this.applyEffect(elem)
         clearTimeout(this.trigger);
-        if (this.radiusGrowth === 0) {
+        if (this.radiusGrowth === 0) { // a collision is detected, and the pojectile explodes
           this.explode();
         }
       }
