@@ -44,6 +44,7 @@ export class GameObject extends Game {
   }
 
   damageFor(prop) {
+    console.log("Damge for: ", prop.dmg)
     this.hp = this.hp - prop.dmg
     this.checkAlive()
   }

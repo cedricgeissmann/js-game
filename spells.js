@@ -11,7 +11,9 @@ export class Spell {
       this.cooldown = 5;
       this.effect = new SpellEffect({
         name: "Fire damage",
-        dmg: 25
+        dmg: 25,
+        ticks: 5,
+        interval: 500
       })
     }
   
