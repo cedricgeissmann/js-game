@@ -35,13 +35,15 @@ export class GameObject extends Game {
   destroy() { }
 
   addSpellEffect( effect ) {
+    // TODO: remove the spell effects for a one shot after the effect has resolved.
+    // We need this right now, because if the object is in a growing radius of a spell,
+    // the effect gets applied every frame the object is inside the effected area.
     if (this.effects.has(effect)) return
     this.effects.add(effect)
     effect.handle(this)
   }
 
   damageFor(prop) {
-    console.log("Damage for: ", prop.dmg)
     this.hp = this.hp - prop.dmg
     this.checkAlive()
   }
@@ -59,7 +61,7 @@ export class Wall extends GameObject {
   }
 
   draw() {
-    
+
     Game.ctx.fillStyle = "brown";
     Game.ctx.fillRect(this.pos.x, this.pos.y, 16, 16);
   }
