@@ -64,6 +64,9 @@ export class Wall extends GameObject {
   draw() {
 
     Game.ctx.fillStyle = "brown";
+    if (this.effects.size >= 1) {
+      Game.ctx.fillStyle = "magenta"
+    }
     Game.ctx.fillRect(this.pos.x, this.pos.y, 16, 16);
   }
 

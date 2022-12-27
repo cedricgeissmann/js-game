@@ -1,3 +1,5 @@
+import { intervalForN } from "./utils.js"
+
 export class SpellEffect {
     constructor(props) {
         this.name = props.name
@@ -10,23 +12,11 @@ export class SpellEffect {
 
     handle(object) {
         if (this.ticks > 0) {
-            this.currentTick = 0
-            this.intervallId = setInterval((self) => {
+            intervalForN((self) => {
                 object.damageFor({dmg: self.dmg, type: self.type})
-                self.currentTick++
-                console.log(self.currentTick, self.ticks, self.intervallId)
-                if (self.currentTick >= self.ticks) {
-                    
-                    self.endEffect()
-                }
-            }, this.interval, this)
+            }, 500, 5, this)
         } else {
             object.damageFor({dmg: this.dmg, type: this.type})
         }
-    }
-
-    endEffect() {
-        console.log("Abort")
-        clearInterval(this.intervallId)
     }
 }

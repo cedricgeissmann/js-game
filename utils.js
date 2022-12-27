@@ -78,6 +78,16 @@ export function checkIntersection(rect1, rect2) {
   return false;
 }
 
+
+export function intervalForN(callback, duration, times, obj) {
+  let counter = 0
+  let id = setInterval((obj) => {
+      callback(obj)
+      counter++
+      if (counter >= times) clearInterval(id)
+  }, duration, obj)
+}
+
 export function $(selector) {
   return document.querySelector(selector);
 }
